@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mapa NDVI Interactivo</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+    }
+    .info.legend {
+      background-color: white;
+      padding: 5px;
+      border-radius: 5px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+    .info.legend i {
+      width: 18px;
+
+      height: 18px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Coordenadas del área de interés y nivel de zoom
+    var latitude = -1.2921;  // Reemplaza con tu latitud
+    var longitude = 36.8219; // Reemplaza con tu longitud
+    var zoomLevel = 10;      // Ajusta el nivel de zoom
+    var latitude_min = -1.3021;
+    var longitude_min = 36.8119;
+    var latitude_max = -1.2821;
+    var longitude_max = 36.8319;
+
+    // Crear el mapa
+    var map = L.map('map').setView([latitude, longitude], zoomLevel);
+
+    // Añadir capa base de OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // URL de la imagen NDVI exportada desde GEE
+    var ndviUrl = 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/a64c2cb13d83334ecce8f3c6c5618578-4bfb93f999fdb32c47d887de1f05c62c:getPixels';  // Reemplaza con la URL de la imagen NDVI
+
+    // Añadir capa de imagen NDVI al mapa
+    L.imageOverlay(ndviUrl, [[latitude_min, longitude_min], [latitude_max, longitude_max]], {
+      opacity: 0.7,
+      attribution: 'NDVI Data &copy; Copernicus'
+    }).addTo(map);
+
+    // Añadir una leyenda al mapa
+    var legend = L.control({position: 'bottomright'});
+
+    legend.onAdd = function (map) {
+      var div = L.DomUtil.create('div', 'info legend');
+      var grades = [-1, -0.5, 0, 0.5, 1];
+      var colors = ['red', 'yellow', 'green'];
+
+      div.innerHTML = '<strong>NDVI</strong><br>';
+      for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+          '<i style="background:' + colors[i] + '"></i> ' +
+          grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+      }
+
+      return div;
+    };
+
+    legend.addTo(map);
+  </script>
+</body>
+</html>
+
